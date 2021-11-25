@@ -21,7 +21,7 @@ type Task struct {
 	ID        uint64    `db:"id"`
 	UserID    uint64    `db:"user_id"`
 	Title     string    `db:"title"`
-	IsDone    bool      `db:"is_done"`
+	Done      bool      `db:"done"`
 	CreatedAt time.Time `db:"created_at"`
 	UpdatedAt time.Time `db:"updated_at"`
 	DeletedAt null.Time `db:"deleted_at"`

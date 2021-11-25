@@ -72,7 +72,8 @@ func main() {
 		}
 		apiTasks := api.Group("/tasks")
 		{
-			apiTasks.GET("")
+			apiTasks.GET("", h.GetTasks)
+			apiTasks.POST("", h.CreateTask)
 			apiTaskID := apiTasks.Group("/:taskID")
 			{
 				apiTaskID.GET("")
