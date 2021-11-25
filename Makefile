@@ -10,9 +10,12 @@ all:
 	@echo "managed source files;"
 	@echo $(SRCS)
 
-.PHONY: up down format clean
+.PHONY: up build down format clean
 up:
 	@$(CMD) up -d
+
+build:
+	@$(CMD) up -d --build
 
 run:
 	@$(CMD) exec app go run main.go

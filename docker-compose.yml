@@ -6,6 +6,8 @@ services:
       dockerfile: Dockerfile
     tty: true
     environment:
+      PORT: 8000
+      SESSION_SECRET: my-super-secret-session
       DB_HOST: mysql_server
       DB_PORT: 3306
       DB_USER: sysdes
@@ -14,7 +16,7 @@ services:
     volumes:
       - .:/go/src/app
     ports:
-      - 8000:8000
+      - "8000:8000"
     depends_on:
       - db
   db:
@@ -30,18 +32,6 @@ services:
       TZ: 'Asia/Tokyo'
     volumes:
       - ./docker/db/sql:/docker-entrypoint-initdb.d
-      #- ./docker/db/data:/var/lib/mysql  ## uncomment to keep the data
+      - ./docker/db/data:/var/lib/mysql
     ports:
-      - 3306:3306
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    container_name: mysql_client
-    environment:
-      - PMA_ARBITRARY=1
-      - PMA_HOSTS=mysql_server
-      - PMA_USER=root
-      - PMA_PASSWORD=root
-    ports:
-      - 8080:80
-    depends_on:
-      - db
+      - "3306:3306"
