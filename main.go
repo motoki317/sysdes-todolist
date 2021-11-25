@@ -61,13 +61,14 @@ func main() {
 	// routing
 	h := service.NewHandlers(dbConn, store)
 	engine.Static("/assets", "./assets")
-	api := engine.Group("/api", middlewares.IsLoggedIn(store))
+	api := engine.Group("/api", middlewares.IsLoggedIn(dbConn, store))
 	{
 		apiUsers := api.Group("/users")
 		{
-			apiUsers.GET("/me")
-			apiUsers.PATCH("/me")
-			apiUsers.DELETE("/me")
+			apiUsers.GET("/me", h.GetMe)
+			apiUsers.PATCH("/me", h.EditMe)
+			apiUsers.DELETE("/me", h.DeleteMe)
+			apiUsers.PUT("/me/password", h.EditMyPassword)
 		}
 		apiTasks := api.Group("/tasks")
 		{
@@ -84,6 +85,7 @@ func main() {
 	{
 		apiNoAuth.POST("/signup", h.SignUp)
 		apiNoAuth.POST("/login", h.Login)
+		apiNoAuth.POST("/logout", h.Logout)
 	}
 
 	// start server

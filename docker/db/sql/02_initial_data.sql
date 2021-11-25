@@ -4,4 +4,4 @@ INSERT INTO `tasks` (`user_id`, `title`) VALUES (1, 'sample-task-01');
 INSERT INTO `tasks` (`user_id`, `title`) VALUES (1, 'sample-task-02');
 INSERT INTO `tasks` (`user_id`, `title`) VALUES (1, 'sample-task-03');
 INSERT INTO `tasks` (`user_id`, `title`) VALUES (1, 'sample-task-04');
-INSERT INTO `tasks` (`user_id`, `title`, `is_done`) VALUES (1, 'sample-task-05', true);
+INSERT INTO `tasks` (`user_id`, `title`, `done`) VALUES (1, 'sample-task-05', true);

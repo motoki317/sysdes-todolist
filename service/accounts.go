@@ -51,7 +51,7 @@ func (h *Handlers) SignUp(c *gin.Context) {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
-	if _, err := h.db.Exec("INSERT INTO `users` (`name`, `password`, `created_at`) VALUES (?, ?, NOW(6))", req.Name, hashedPass); err != nil {
+	if _, err := h.db.Exec("INSERT INTO `users` (`name`, `password`) VALUES (?, ?)", req.Name, hashedPass); err != nil {
 		// Check name conflict
 		if merr, ok := err.(*mysql.MySQLError); ok && merr.Number == mysqlErrorDuplicateEntry {
 			c.AbortWithStatus(http.StatusConflict)
@@ -85,7 +85,7 @@ func (h *Handlers) Login(c *gin.Context) {
 		hash   []byte
 		exists bool
 	)
-	err := h.db.Get(&user, "SELECT * FROM `users` WHERE `name` = ?", req.Name)
+	err := h.db.Get(&user, "SELECT * FROM `users` WHERE `name` = ? AND `deleted_at` IS NULL", req.Name)
 	if err != nil && err != sql.ErrNoRows {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
@@ -103,6 +103,15 @@ func (h *Handlers) Login(c *gin.Context) {
 
 	// login
 	if err := middlewares.SetLoginSession(c, h.store, user.ID); err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+func (h *Handlers) Logout(c *gin.Context) {
+	if err := middlewares.RevokeSession(c, h.store); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}

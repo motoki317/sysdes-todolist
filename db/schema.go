@@ -12,6 +12,7 @@ type User struct {
 	Name      string    `db:"name"`
 	Password  string    `db:"password"`
 	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
 	DeletedAt null.Time `db:"deleted_at"`
 }
 
@@ -22,5 +23,6 @@ type Task struct {
 	Title     string    `db:"title"`
 	IsDone    bool      `db:"is_done"`
 	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
 	DeletedAt null.Time `db:"deleted_at"`
 }
