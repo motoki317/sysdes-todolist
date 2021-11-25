@@ -17,8 +17,6 @@ RUN apk add --no-cache --update tzdata
 
 WORKDIR /app
 
-COPY ./assets/ /app/assets/
-COPY ./views/ /app/views/
 COPY --from=build /go/src/app/todolist /app/todolist
 
 ENTRYPOINT ["/app/todolist"]

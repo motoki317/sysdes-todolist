@@ -1,5 +1,16 @@
 version: "3"
 services:
+  reverse-proxy:
+    build:
+      context: ./frontend
+      dockerfile: ./Dockerfile
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
   app:
     build:
       context: .
@@ -8,22 +19,22 @@ services:
     environment:
       PORT: 8000
       SESSION_SECRET: my-super-secret-session
-      DB_HOST: mysql_server
+      DB_HOST: db
       DB_PORT: 3306
       DB_USER: sysdes
       DB_PASSWORD: sysdes
       DB_NAME: sysdes_todolist_db
     volumes:
       - .:/go/src/app
-    ports:
-      - "8000:8000"
+    expose:
+      - "8000"
     depends_on:
       - db
+
   db:
     build:
       context: ./docker/db
       dockerfile: Dockerfile
-    container_name: mysql_server
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: sysdes_todolist_db
@@ -35,3 +46,7 @@ services:
       - ./docker/db/data:/var/lib/mysql
     ports:
       - "3306:3306"
+
+volumes:
+  caddy_data:
+  caddy_config:

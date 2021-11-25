@@ -1,5 +1,6 @@
 /.git
 /docker
+/frontend
 
 .dockerignore
 .gitignore

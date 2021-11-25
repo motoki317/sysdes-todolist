@@ -47,7 +47,6 @@ func main() {
 
 	// initialize Gin engine
 	engine := gin.Default()
-	engine.LoadHTMLGlob("views/*.html")
 
 	// session store
 	sessSecret := os.Getenv("SESSION_SECRET")
@@ -60,7 +59,6 @@ func main() {
 
 	// routing
 	h := service.NewHandlers(dbConn, store)
-	engine.Static("/assets", "./assets")
 	api := engine.Group("/api", middlewares.IsLoggedIn(dbConn, store))
 	{
 		apiUsers := api.Group("/users")
