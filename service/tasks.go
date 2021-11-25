@@ -2,9 +2,11 @@ package service
 
 import (
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gopkg.in/guregu/null.v4"
 
 	"todolist.go/db"
 	"todolist.go/service/middlewares"
@@ -79,4 +81,63 @@ func (h *Handlers) CreateTask(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, formatTask(&task))
+}
+
+func (h *Handlers) GetTask(c *gin.Context) {
+	task := middlewares.GetTask(c)
+
+	c.JSON(http.StatusOK, formatTask(task))
+}
+
+type editTaskRequest struct {
+	Title null.String `json:"title"`
+	Done  null.Bool   `json:"done"`
+}
+
+func (h *Handlers) EditTask(c *gin.Context) {
+	task := middlewares.GetTask(c)
+
+	var req editTaskRequest
+	if err := c.Bind(&req); err != nil || (req.Title.Valid && req.Title.String == "") {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	query := "UPDATE `tasks` SET "
+	clauses := make([]string, 0)
+	args := make([]interface{}, 0)
+	update := false
+	if req.Title.Valid {
+		clauses = append(clauses, "`title` = ?")
+		args = append(args, req.Title.String)
+		update = true
+	}
+	if req.Done.Valid {
+		clauses = append(clauses, "`done` = ?")
+		args = append(args, req.Done.Bool)
+		update = true
+	}
+	query += strings.Join(clauses, ", ")
+	query += " WHERE `id` = ?"
+	args = append(args, task.ID)
+
+	if update {
+		if _, err := h.db.Exec(query, args...); err != nil {
+			_ = c.AbortWithError(http.StatusInternalServerError, err)
+			return
+		}
+	}
+
+	c.Status(http.StatusNoContent)
+}
+
+func (h *Handlers) DeleteTask(c *gin.Context) {
+	task := middlewares.GetTask(c)
+
+	if _, err := h.db.Exec("UPDATE `tasks` SET `deleted_at` = NOW(6) WHERE `id` = ?", task.ID); err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.Status(http.StatusNoContent)
 }

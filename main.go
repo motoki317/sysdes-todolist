@@ -74,11 +74,11 @@ func main() {
 		{
 			apiTasks.GET("", h.GetTasks)
 			apiTasks.POST("", h.CreateTask)
-			apiTaskID := apiTasks.Group("/:taskID")
+			apiTaskID := apiTasks.Group("/:taskID", middlewares.RetrieveTask(dbConn))
 			{
-				apiTaskID.GET("")
-				apiTaskID.PATCH("")
-				apiTaskID.DELETE("")
+				apiTaskID.GET("", h.GetTask)
+				apiTaskID.PATCH("", h.EditTask)
+				apiTaskID.DELETE("", h.DeleteTask)
 			}
 		}
 	}

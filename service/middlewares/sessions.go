@@ -11,14 +11,9 @@ import (
 	db2 "todolist.go/db"
 )
 
-const sessionName = "session"
-
 const (
-	userIDKey = "userID"
-)
-
-const (
-	ctxUserKey = "user"
+	sessionName      = "session"
+	sessionUserIDKey = "userID"
 )
 
 func IsLoggedIn(db *sqlx.DB, store sessions.Store) gin.HandlerFunc {
@@ -28,7 +23,7 @@ func IsLoggedIn(db *sqlx.DB, store sessions.Store) gin.HandlerFunc {
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
-		iUserID, ok := sess.Values[userIDKey]
+		iUserID, ok := sess.Values[sessionUserIDKey]
 		userID, castOK := iUserID.(uint64)
 		if !ok || !castOK {
 			c.AbortWithStatus(http.StatusUnauthorized)
@@ -56,7 +51,7 @@ func SetLoginSession(c *gin.Context, store sessions.Store, userID uint64) error 
 			return err
 		}
 	}
-	sess.Values[userIDKey] = userID
+	sess.Values[sessionUserIDKey] = userID
 	return store.Save(c.Request, c.Writer, sess)
 }
 
