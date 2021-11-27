@@ -2,12 +2,15 @@
   <div class='column q-gutter-md'>
 
     <q-table title='Todos' :columns='columns' :rows='todos' grid :loading='requesting'>
-      <!-- TODO: task addition -->
+      <template v-slot:top-left>
+        <q-btn label='タスクを追加' color='secondary' @click='addDialog'></q-btn>
+      </template>
+
       <template v-slot:top-right>
         <!-- TODO: server side search and filter -->
-        <q-input borderless dense debounce="300" v-model="filter" placeholder="タスクを検索...">
+        <q-input borderless dense debounce='300' v-model='filter' placeholder='タスクを検索...'>
           <template v-slot:append>
-            <q-icon name="search" />
+            <q-icon name='search' />
           </template>
         </q-input>
       </template>
@@ -70,6 +73,45 @@ const columns = [
 ];
 
 function useTodoUpdate($q: QVueGlobals, requesting: Ref<boolean>, todos: Ref<Todo[]>) {
+  const addTask = (title: string) => {
+    requesting.value = true;
+    api.post('/api/tasks', { title })
+      .then((res) => {
+        todos.value.push(res.data);
+
+        $q.notify({
+          color: 'positive',
+          position: 'bottom',
+          message: 'タスクを追加しました。',
+          icon: 'done'
+        });
+      })
+      .catch(() => {
+        $q.notify({
+          color: 'negative',
+          position: 'bottom',
+          message: 'タスクの追加に失敗しました。',
+          icon: 'report_problem'
+        });
+      })
+      .finally(() => {
+        requesting.value = false;
+      });
+  };
+  const addDialog = () => {
+    $q.dialog({
+      title: 'タスクを追加',
+      message: 'タスクのタイトルを入力してください。',
+      prompt: {
+        model: '',
+        type: 'text'
+      },
+      cancel: true
+    }).onOk((title: string) => {
+      addTask(title);
+    });
+  };
+
   const updateTitle = (id: number, title: string) => {
     requesting.value = true;
     api.patch(`/api/tasks/${id}`, { title })
@@ -126,7 +168,7 @@ function useTodoUpdate($q: QVueGlobals, requesting: Ref<boolean>, todos: Ref<Tod
     requesting.value = true;
     api.delete(`/api/tasks/${id}`)
       .then(() => {
-        todos.value = todos.value.filter((todo) => todo.id !== id)
+        todos.value = todos.value.filter((todo) => todo.id !== id);
 
         $q.notify({
           color: 'positive',
@@ -154,7 +196,7 @@ function useTodoUpdate($q: QVueGlobals, requesting: Ref<boolean>, todos: Ref<Tod
       cancel: true
     }).onOk(() => deleteTask(id));
   };
-  return { updateTitle, updateDone, deleteConfirm };
+  return { addDialog, updateTitle, updateDone, deleteConfirm };
 }
 
 export default defineComponent({
