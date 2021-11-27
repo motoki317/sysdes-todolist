@@ -38,11 +38,53 @@ func formatTasks(tasks []*db.Task) []*taskResponse {
 	return ret
 }
 
+type getTasksRequest struct {
+	Title  string    `form:"title"`
+	Done   null.Bool `form:"done"`
+	Limit  null.Int  `form:"limit"`
+	Offset null.Int  `form:"offset"`
+}
+
 func (h *Handlers) GetTasks(c *gin.Context) {
 	user := middlewares.GetUser(c)
 
+	var req getTasksRequest
+	if err := c.Bind(&req); err != nil || (req.Limit.Valid && req.Limit.Int64 <= 0) || (req.Offset.Valid && req.Offset.Int64 < 0) || (!req.Limit.Valid && req.Offset.Valid) {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	query := "SELECT * FROM `tasks` WHERE "
+	conditions := make([]string, 0, 6)
+	args := make([]interface{}, 0, 6)
+
+	conditions = append(conditions, "`user_id` = ?", "`deleted_at` IS NULL")
+	args = append(args, user.ID)
+
+	if req.Title != "" {
+		conditions = append(conditions, "`title` LIKE ?")
+		args = append(args, "%"+req.Title+"%")
+	}
+	if req.Done.Valid {
+		conditions = append(conditions, "`done` = ?")
+		args = append(args, req.Done.Bool)
+	}
+
+	query += strings.Join(conditions, " AND ")
+
+	query += " ORDER BY `id`"
+	if req.Limit.Valid {
+		query += " LIMIT ?"
+		args = append(args, req.Limit.Int64)
+
+		if req.Offset.Valid {
+			query += " OFFSET ?"
+			args = append(args, req.Offset.Int64)
+		}
+	}
+
 	var tasks []*db.Task
-	if err := h.db.Select(&tasks, "SELECT * FROM `tasks` WHERE `user_id` = ? AND `deleted_at` IS NULL ORDER BY `id`", user.ID); err != nil {
+	if err := h.db.Select(&tasks, query, args...); err != nil {
 		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
