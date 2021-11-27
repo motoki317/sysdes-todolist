@@ -1,28 +1,20 @@
 <template>
-  <q-item
-    clickable
-    tag="a"
-    target="_blank"
-    :href="link"
-  >
+  <q-item clickable @click='$router.push(link)'>
     <q-item-section
-      v-if="icon"
+      v-if='icon'
       avatar
     >
-      <q-icon :name="icon" />
+      <q-icon :name='icon' />
     </q-item-section>
 
     <q-item-section>
       <q-item-label>{{ title }}</q-item-label>
-      <q-item-label caption>
-        {{ caption }}
-      </q-item-label>
     </q-item-section>
   </q-item>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script lang='ts'>
+import { defineComponent } from 'vue';
 
 export default defineComponent({
   name: 'EssentialLink',
@@ -30,11 +22,6 @@ export default defineComponent({
     title: {
       type: String,
       required: true
-    },
-
-    caption: {
-      type: String,
-      default: ''
     },
 
     link: {
@@ -47,5 +34,5 @@ export default defineComponent({
       default: ''
     }
   }
-})
+});
 </script>
