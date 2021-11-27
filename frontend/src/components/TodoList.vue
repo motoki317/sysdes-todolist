@@ -1,13 +1,22 @@
 <template>
-  <div class='column q-gutter-md'>
+  <div class='column q-gutter-md' style='width: 100%'>
 
-    <q-table title='Todos' :columns='columns' :rows='todos' grid :loading='requesting'>
+    <q-table
+      title='Todos'
+      width='100%'
+      :columns='columns'
+      :rows='todos'
+      grid
+      :loading='requesting'
+      v-model:pagination='pagination'
+      :filter='filter'
+      @request='onRequest'
+    >
       <template v-slot:top-left>
         <q-btn label='タスクを追加' color='secondary' @click='addDialog'></q-btn>
       </template>
 
       <template v-slot:top-right>
-        <!-- TODO: server side search and filter -->
         <q-input borderless dense debounce='300' v-model='filter' placeholder='タスクを検索...'>
           <template v-slot:append>
             <q-icon name='search' />
@@ -61,7 +70,7 @@
 </template>
 
 <script lang='ts'>
-import { defineComponent, ref, Ref } from 'vue';
+import { defineComponent, ref, Ref, onMounted } from 'vue';
 import { Todo } from './models';
 import { api } from 'boot/axios';
 import { QVueGlobals, useQuasar } from 'quasar';
@@ -204,12 +213,64 @@ export default defineComponent({
 
   props: {},
 
-  async setup() {
+  setup() {
     const $q = useQuasar();
-    const todos = ref((await api.get('/api/tasks')).data as Todo[]);
-    const requesting = ref(false);
 
-    return { todos, columns, requesting, ...useTodoUpdate($q, requesting, todos) };
+    const todos = ref([] as Todo[]);
+    const filter = ref('');
+    const requesting = ref(false);
+    const pagination = ref({
+      descending: false,
+      page: 1,
+      rowsPerPage: 5,
+      rowsNumber: 10
+    });
+
+    function onRequest(props: { pagination: { page: number, rowsPerPage: number }; filter: string }) {
+      const { page, rowsPerPage } = props.pagination
+      const filter = props.filter
+
+      requesting.value = true;
+
+      const params: Record<string, string | number> = {}
+      if (filter) {
+        params.title = filter
+      }
+      // TODO: done task only
+      if (rowsPerPage > 0) {
+        params.limit = rowsPerPage
+        params.offset = rowsPerPage * (page - 1)
+      }
+      api.get('/api/tasks', { params })
+      .then((res) => {
+        const data = res.data as { count: number; tasks: Todo[] }
+
+        todos.value = data.tasks
+        pagination.value.rowsNumber = data.count
+        pagination.value.page = page
+        pagination.value.rowsPerPage = rowsPerPage
+      })
+      .catch(() => {
+        $q.notify({
+          color: 'negative',
+          position: 'bottom',
+          message: 'タスクリストの取得に失敗しました。',
+          icon: 'report_problem'
+        })
+      })
+      .finally(() => {
+        requesting.value = false;
+      })
+    }
+
+    onMounted(() => {
+      onRequest({
+        pagination: pagination.value,
+        filter: ''
+      });
+    });
+
+    return { todos, columns, requesting, filter, pagination, onRequest, ...useTodoUpdate($q, requesting, todos) };
   }
 });
 </script>

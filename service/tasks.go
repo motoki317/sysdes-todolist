@@ -45,12 +45,23 @@ type getTasksRequest struct {
 	Offset null.Int  `form:"offset"`
 }
 
+type getTasksResponse struct {
+	Count int             `json:"count"`
+	Tasks []*taskResponse `json:"tasks"`
+}
+
 func (h *Handlers) GetTasks(c *gin.Context) {
 	user := middlewares.GetUser(c)
 
 	var req getTasksRequest
 	if err := c.Bind(&req); err != nil || (req.Limit.Valid && req.Limit.Int64 <= 0) || (req.Offset.Valid && req.Offset.Int64 < 0) || (!req.Limit.Valid && req.Offset.Valid) {
 		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	var count int
+	if err := h.db.Get(&count, "SELECT COUNT(*) FROM `tasks` WHERE `user_id` = ? AND `deleted_at` IS NULL", user.ID); err != nil {
+		_ = c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
@@ -89,7 +100,10 @@ func (h *Handlers) GetTasks(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, formatTasks(tasks))
+	c.JSON(http.StatusOK, getTasksResponse{
+		Count: count,
+		Tasks: formatTasks(tasks),
+	})
 }
 
 type createTaskRequest struct {

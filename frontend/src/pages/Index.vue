@@ -1,16 +1,7 @@
 <template>
   <q-page padding class='row'>
 
-    <Suspense>
-      <template #default>
-        <todo-list></todo-list>
-      </template>
-      <template #fallback>
-        <p>
-          Loading...
-        </p>
-      </template>
-    </Suspense>
+    <todo-list></todo-list>
 
   </q-page>
 </template>
