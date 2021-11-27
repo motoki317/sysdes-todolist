@@ -13,7 +13,9 @@
     </div>
 
     <div class='q-gutter-md row'>
+      <q-btn label='ログアウト' color='primary' @click='logout($router)'></q-btn>
       <q-btn label='名前を変更する' color='secondary' @click='changeNamePrompt'></q-btn>
+      <q-btn label='パスワードを変更する' color='secondary' @click='$router.push("/account/change-password")'></q-btn>
       <q-btn label='アカウントを削除する' color='negative' @click='deleteConfirm($router)'></q-btn>
     </div>
 
@@ -60,6 +62,29 @@ export default defineComponent({
         })
         .finally(() => {
           loading.value = false;
+        });
+    };
+
+    const logout = (router: Router) => {
+      api.post('/api/logout')
+        .then(() => {
+          $q.notify({
+            color: 'positive',
+            position: 'bottom',
+            message: 'ログアウトしました。',
+            icon: 'done'
+          });
+          router.push('/login').catch((err) => {
+            console.log('router push failed', err);
+          });
+        })
+        .catch(() => {
+          $q.notify({
+            color: 'negative',
+            position: 'bottom',
+            message: 'ログアウトに失敗しました。',
+            icon: 'report_problem'
+          });
         });
     };
 
@@ -119,8 +144,8 @@ export default defineComponent({
             icon: 'done'
           });
           router.push('/login').catch((err) => {
-            console.log('router push failed', err)
-          })
+            console.log('router push failed', err);
+          });
         })
         .catch(() => {
           $q.notify({
@@ -144,7 +169,7 @@ export default defineComponent({
 
     reload();
 
-    return { data, loading, changeNamePrompt, deleteConfirm };
+    return { data, loading, logout, changeNamePrompt, deleteConfirm };
   }
 });
 </script>

@@ -7,7 +7,8 @@ const routes: RouteRecordRaw[] = [
     component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', component: () => import('pages/Index.vue') },
-      { path: 'account', component: () => import('pages/AccountManagement.vue') }
+      { path: 'account', component: () => import('pages/AccountManagement.vue') },
+      { path: 'account/change-password', component: () => import('pages/ChangePassword.vue') }
     ],
     beforeEnter: (to, from, next) => {
       api.get('/api/users/me').then(() => next()).catch(() => next('/login'))
