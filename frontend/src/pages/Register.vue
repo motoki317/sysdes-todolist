@@ -65,7 +65,9 @@ export default defineComponent({
             message: '登録に成功しました。ログインしてください。',
             icon: 'done'
           });
-          return router.push('/login');
+          router.push('/login').catch((err) => {
+            console.log('router push failed', err)
+          })
         })
         .catch((e) => {
           if ((e as AxiosError).response?.status === 409) {

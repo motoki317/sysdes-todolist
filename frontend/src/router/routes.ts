@@ -6,7 +6,8 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/Index.vue') }
+      { path: '', component: () => import('pages/Index.vue') },
+      { path: 'account', component: () => import('pages/AccountManagement.vue') }
     ],
     beforeEnter: (to, from, next) => {
       api.get('/api/users/me').then(() => next()).catch(() => next('/login'))

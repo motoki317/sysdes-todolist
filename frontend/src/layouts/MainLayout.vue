@@ -51,6 +51,11 @@ const linksList = [
     title: 'Todo List',
     icon: 'notes',
     link: '/'
+  },
+  {
+    title: 'Account',
+    icon: 'account_circle',
+    link: '/account'
   }
 ];
 

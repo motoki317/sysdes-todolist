@@ -58,7 +58,9 @@ export default defineComponent({
     const onSubmit = (router: Router) => {
       api.post('/api/login', { name: name.value, password: password.value })
         .then(() => {
-          return router.push('/')
+          router.push('/').catch((err) => {
+            console.log('router push failed', err)
+          })
         })
         .catch(() => {
           $q.notify({
